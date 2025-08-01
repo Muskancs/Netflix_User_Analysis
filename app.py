@@ -1,47 +1,72 @@
+%%writefile app.py
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+from wordcloud import WordCloud
+import os
 
-# Load data
-df = pd.read_csv('netflix_titles.csv')
+# -------------------------------
+# Set Streamlit page config
+# -------------------------------
+st.set_page_config(page_title="Netflix Data Dashboard", layout="wide")
 
-# Preprocessing
-df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
-df['year_added'] = df['date_added'].dt.year
-df['month_added'] = df['date_added'].dt.month
-df = df.dropna(subset=['date_added'])
+# -------------------------------
+# Load the dataset
+# -------------------------------
+@st.cache_data
+def load_data():
+    return pd.read_csv("netflix_movies_detailed_up_to_2025.csv")
 
-st.set_page_config(layout="wide")
-st.title("🎬 Netflix User Analysis Dashboard")
+df = load_data()
 
-# Sidebar Filters
-st.sidebar.header("📊 Filter Content")
-content_type = st.sidebar.multiselect("Select Type", df['type'].unique(), default=list(df['type'].unique()))
-years = st.sidebar.slider("Select Year Range", int(df['year_added'].min()), int(df['year_added'].max()), (2015, 2020))
-country = st.sidebar.selectbox("Select Country", ['All'] + sorted(df['country'].dropna().unique().tolist()))
+# -------------------------------
+# Header
+# -------------------------------
+st.title("🎬 Netflix Data Analysis Dashboard")
+st.markdown("An interactive dashboard to explore Netflix content trends till 2025.")
 
-# Apply Filters
-filtered_df = df[df['type'].isin(content_type)]
-filtered_df = filtered_df[(filtered_df['year_added'] >= years[0]) & (filtered_df['year_added'] <= years[1])]
-if country != 'All':
-    filtered_df = filtered_df[filtered_df['country'].str.contains(country)]
+# -------------------------------
+# Key Stats Cards
+# -------------------------------
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("📦 Total Titles", df.shape[0])
+with col2:
+    st.metric("📅 Most Active Year", df['release_year'].value_counts().idxmax())
+with col3:
+    st.metric("🎭 Unique Genres", df['genres'].nunique())
 
-st.markdown("### 📈 Content Type Distribution")
-st.bar_chart(filtered_df['type'].value_counts())
+# -------------------------------
+# Content Type Count Plot
+# -------------------------------
+st.subheader("📊 Content Type Distribution")
+fig1, ax1 = plt.subplots()
+sns.countplot(data=df, x='type', palette='Set2', ax=ax1)
+ax1.set_title("Distribution of Content Types")
+st.pyplot(fig1)
 
-st.markdown("### 📅 Yearly Content Added")
-year_data = filtered_df['year_added'].value_counts().sort_index()
-st.line_chart(year_data)
+# -------------------------------
+# Genre WordCloud
+# -------------------------------
+st.subheader("🌈 Genre Word Cloud")
+genre_text = ','.join(df['genres'].dropna().astype(str))
+wordcloud = WordCloud(
+    width=1000,
+    height=400,
+    background_color='black',
+    colormap='Set2',
+    collocations=False
+).generate(genre_text)
 
-st.markdown("### 🌍 Top Countries by Content")
-top_countries = df['country'].dropna().str.split(', ').explode().value_counts().head(10)
-st.bar_chart(top_countries)
+fig2, ax2 = plt.subplots(figsize=(12, 5))
+ax2.imshow(wordcloud, interpolation='bilinear')
+ax2.axis('off')
+st.pyplot(fig2)
 
-st.markdown("### 🎭 Genre Word Cloud")
-st.image("genre_wordcloud.png", use_column_width=True)
-
-st.markdown("### 🤖 Clustering of Content (NLP)")
-st.image("genre_clusters.png", use_column_width=True)
-
+# -------------------------------
+# Footer
+# -------------------------------
 st.markdown("---")
-st.markdown("Built with ❤️ by Muskan Bisht")
+st.markdown("👩‍💻 **Created by Muskan Bisht** | 📧 Reach me on [LinkedIn](https://www.linkedin.com/)")
+
