@@ -21,7 +21,7 @@ filtered_df = df[
 ]
 
 # Title
-st.title("🎬 Netflix Dashboard - Timmy x Sentinel")
+st.title("🎬 Netflix Dashboard")
 
 # Summary Metrics
 col1, col2, col3 = st.columns(3)
