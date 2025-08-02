@@ -20,7 +20,7 @@ filtered_df = df[
 ]
 
 # Dashboard Title
-st.title("🎬 Netflix Dashboard - Timmy x Sentinel Style")
+st.title("🎬 Netflix Dashboard")
 
 # Summary Cards
 col1, col2, col3 = st.columns(3)
