@@ -67,7 +67,19 @@ st.plotly_chart(fig_ratings, use_container_width=True)
 
 # 📈 Average Vote by Release Year
 st.subheader("📈 Average Vote per Release Year")
-avg_votes = filtered_df.groupby('release_year')['vote_average'].mean().dropna()
+if 'vote_average' in filtered_df.columns:
+    avg_votes = filtered_df.groupby('release_year')['vote_average'].mean().dropna()
+    fig_avg_vote = px.line(
+        x=avg_votes.index,
+        y=avg_votes.values,
+        labels={'x': 'Release Year', 'y': 'Avg Vote'},
+        template='plotly_dark',
+        title='📈 Avg Vote by Release Year'
+    )
+    st.plotly_chart(fig_avg_vote, use_container_width=True)
+else:
+    st.warning("⚠️ 'vote_average' column not found in the dataset.")
+
 fig_avg_vote = px.line(x=avg_votes.index, y=avg_votes.values, labels={'x': 'Year', 'y': 'Avg Vote'}, template='plotly_dark')
 st.plotly_chart(fig_avg_vote, use_container_width=True)
 
