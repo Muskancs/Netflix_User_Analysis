@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 # Load cleaned data
-df = pd.read_csv('/content/drive/MyDrive/Netflix_User_Analysis/data/netflix_cleaned_titles.csv')
+df = pd.read_csv('netflix_cleaned_titles.csv')
 
 # Sidebar Filters
 st.sidebar.header("🔍 Filters")
