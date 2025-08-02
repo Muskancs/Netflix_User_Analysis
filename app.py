@@ -65,7 +65,7 @@ filtered_df = df[df['country'] == selected_country]
 
 # Section: Top Genres by Country
 st.subheader(f"🎭 Genre Distribution in {selected_country}")
-genre_data = filtered_df['listed_in'].dropna().str.split(',').explode().str.strip()
+genre_data = filtered_df['genres'].dropna().str.split(',').explode().str.strip()
 top_genres = genre_data.value_counts().head(10)
 
 fig1, ax1 = plt.subplots()
