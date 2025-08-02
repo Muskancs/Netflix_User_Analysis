@@ -34,7 +34,7 @@ Netflix Movies and TV Shows Dataset
 
 ## 📌 Author
 **Muskan Bisht**  
-🔗 [LinkedIn](https://www.linkedin.com/in/YOURUSERNAME)  
+🔗 [LinkedIn](www.linkedin.com/in/muskan-bisht-b143702b3)
 📫 [Email](mailto:muskanbisht02@email.com)
 
 ---
