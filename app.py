@@ -43,8 +43,7 @@ def apply_theme(theme):
 apply_theme(theme_choice)
 
 # Load Data
-DATA_PATH = '/content/drive/MyDrive/Netflix_User_Analysis/data/netflix_cleaned_titles.csv'
-df = pd.read_csv(DATA_PATH)
+df = pd.read_csv('netflix_cleaned_titles.csv')
 
 # Add a year column
 df['year_added'] = pd.to_datetime(df['date_added'], errors='coerce').dt.year
