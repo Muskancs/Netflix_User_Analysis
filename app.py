@@ -1,71 +1,48 @@
+# app.py
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from wordcloud import WordCloud
-import os
+import plotly.express as px
 
-# -------------------------------
-# Set Streamlit page config
-# -------------------------------
-st.set_page_config(page_title="Netflix Data Dashboard", layout="wide")
+# Load cleaned data
+df = pd.read_csv('netflix_cleaned_titles.csv')
 
-# -------------------------------
-# Load the dataset
-# -------------------------------
-@st.cache_data
-def load_data():
-    return pd.read_csv("netflix_movies_detailed_up_to_2025.csv")
+# Sidebar Filters
+st.sidebar.header("🔍 Filters")
+selected_type = st.sidebar.multiselect("Select Type", df['type'].unique(), default=list(df['type'].unique()))
+selected_country = st.sidebar.multiselect("Select Country", df['country'].unique(), default=["India", "United States"])
+selected_year = st.sidebar.slider("Select Year Added", int(df['year_added'].min()), int(df['year_added'].max()), (2015, 2025))
 
-df = load_data()
+# Filter Data
+filtered_df = df[
+    (df['type'].isin(selected_type)) &
+    (df['country'].isin(selected_country)) &
+    (df['year_added'].between(*selected_year))
+]
 
-# -------------------------------
-# Header
-# -------------------------------
-st.title("🎬 Netflix Data Analysis Dashboard")
-st.markdown("An interactive dashboard to explore Netflix content trends till 2025.")
+# Dashboard Title
+st.title("🎬 Netflix Dashboard - Timmy x Sentinel Style")
 
-# -------------------------------
-# Key Stats Cards
-# -------------------------------
+# Summary Cards
 col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("📦 Total Titles", df.shape[0])
-with col2:
-    st.metric("📅 Most Active Year", df['release_year'].value_counts().idxmax())
-with col3:
-    st.metric("🎭 Unique Genres", df['genres'].nunique())
+col1.metric("Total Titles", len(filtered_df))
+col2.metric("Movies", filtered_df[filtered_df['type'] == 'Movie'].shape[0])
+col3.metric("TV Shows", filtered_df[filtered_df['type'] == 'TV Show'].shape[0])
 
-# -------------------------------
-# Content Type Count Plot
-# -------------------------------
-st.subheader("📊 Content Type Distribution")
-fig1, ax1 = plt.subplots()
-sns.countplot(data=df, x='type', palette='Set2', ax=ax1)
-ax1.set_title("Distribution of Content Types")
-st.pyplot(fig1)
+# 📈 Content by Year
+st.subheader("📅 Titles Added per Year")
+year_counts = filtered_df['year_added'].value_counts().sort_index()
+fig_year = px.bar(x=year_counts.index, y=year_counts.values, labels={'x': 'Year', 'y': 'Number of Titles'}, template='plotly_dark')
+st.plotly_chart(fig_year, use_container_width=True)
 
-# -------------------------------
-# Genre WordCloud
-# -------------------------------
-st.subheader("🌈 Genre Word Cloud")
-genre_text = ','.join(df['genres'].dropna().astype(str))
-wordcloud = WordCloud(
-    width=1000,
-    height=400,
-    background_color='black',
-    colormap='Set2',
-    collocations=False
-).generate(genre_text)
+# 🌍 Content by Country
+st.subheader("🌍 Top Countries by Content")
+top_countries = filtered_df['country'].value_counts().head(10)
+fig_country = px.bar(x=top_countries.index, y=top_countries.values, labels={'x': 'Country', 'y': 'Count'}, template='plotly_dark')
+st.plotly_chart(fig_country, use_container_width=True)
 
-fig2, ax2 = plt.subplots(figsize=(12, 5))
-ax2.imshow(wordcloud, interpolation='bilinear')
-ax2.axis('off')
-st.pyplot(fig2)
-
-# -------------------------------
-# Footer
-# -------------------------------
-st.markdown("---")
-st.markdown("👩‍💻 **Created by Muskan Bisht** | 📧 Reach me on [LinkedIn](https://www.linkedin.com/)")
-
+# 🎭 Genre Cloud
+st.subheader("🎭 Top Genres")
+genre_series = filtered_df['genres'].dropna().str.split(', ').explode()
+top_genres = genre_series.value_counts().head(10)
+fig_genres = px.pie(values=top_genres.values, names=top_genres.index, template='plotly_dark', title='Top Genres')
+st.plotly_chart(fig_genres, use_container_width=True)
